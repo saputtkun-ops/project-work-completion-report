@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Pekerjaan Proyek - Work Completion Report System</title>
+    <meta name="description" content="Aplikasi Pembuatan Laporan Pekerjaan Proyek Selesai (Work Completion Report) dengan fitur Dokumentasi Before & After, Pair Comparison, dan Export Microsoft Word (.DOCX).">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="brand">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-helmet-safety"></i>
+                </div>
+                <div class="brand-text">
+                    <h2>LAPORAN PROYEK</h2>
+                    <span>Work Completion System</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-tab="dashboard">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-tab="create-report">
+                    <i class="fa-solid fa-plus-circle"></i>
+                    <span>Buat Laporan Baru</span>
+                </button>
+                <button class="nav-btn" data-tab="reports-all">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span>Daftar Laporan</span>
+                </button>
+                <button class="nav-btn" data-tab="reports-draft">
+                    <i class="fa-solid fa-file-pen"></i>
+                    <span>Draft Laporan</span>
+                </button>
+                <button class="nav-btn" data-tab="reports-completed">
+                    <i class="fa-solid fa-square-check"></i>
+                    <span>Laporan Selesai</span>
+                </button>
+                <button class="nav-btn" data-tab="settings">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Pengaturan</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                    <div class="user-info">
+                        <strong id="userNameDisplay">Ir. Budi Santoso</strong>
+                        <span>Site Supervisor</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navbar -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="btn-icon" id="toggleSidebarBtn"><i class="fa-solid fa-bars"></i></button>
+                    <h1 id="pageTitle">Dashboard Laporan Proyek</h1>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-primary" id="btnHeaderCreate">
+                        <i class="fa-solid fa-plus"></i> Buat Laporan Baru
+                    </button>
+                </div>
+            </header>
+
+            <!-- TAB 1: DASHBOARD -->
+            <section id="tab-dashboard" class="tab-pane active">
+                <!-- Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-card gold">
+                        <div class="card-icon"><i class="fa-solid fa-building-flag"></i></div>
+                        <div class="card-data">
+                            <span class="label">Proyek Aktif</span>
+                            <h3 id="statProjectName">Pembangunan Gedung A</h3>
+                            <span class="subtext">Lokasi: Jakarta Selatan</span>
+                        </div>
+                    </div>
+                    <div class="metric-card blue">
+                        <div class="card-icon"><i class="fa-solid fa-file-lines"></i></div>
+                        <div class="card-data">
+                            <span class="label">Total Laporan</span>
+                            <h3 id="statTotalReports">0</h3>
+                            <span class="subtext">Keseluruhan dokumen</span>
+                        </div>
+                    </div>
+                    <div class="metric-card amber">
+                        <div class="card-icon"><i class="fa-solid fa-file-pen"></i></div>
+                        <div class="card-data">
+                            <span class="label">Laporan Draft</span>
+                            <h3 id="statDraftReports">0</h3>
+                            <span class="subtext text-amber">Belum diselesaikan</span>
+                        </div>
+                    </div>
+                    <div class="metric-card emerald">
+                        <div class="card-icon"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="card-data">
+                            <span class="label">Laporan Selesai</span>
+                            <h3 id="statCompletedReports">0</h3>
+                            <span class="subtext text-emerald">Terverifikasi & Siap Download</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Reports Card -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-clock-rotate-left"></i> Laporan Terbaru</h3>
+                        <button class="btn btn-sm btn-secondary" onclick="app.switchTab('reports-all')">Lihat Semua</button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table" id="dashboardRecentTable">
+                                <thead>
+                                    <tr>
+                                        <th>No. Laporan</th>
+                                        <th>Tanggal</th>
+                                        <th>Nama Pekerjaan</th>
+                                        <th>Area / Lokasi</th>
+                                        <th>Pelaksana</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: BUAT LAPORAN BARU / FORM -->
+            <section id="tab-create-report" class="tab-pane">
+                <form id="reportForm" onsubmit="app.handleFormSubmit(event)">
+                    <input type="hidden" id="reportId" value="">
+                    
+                    <div class="form-header-bar">
+                        <div>
+                            <h2 id="formTitle">Formulir Laporan Pekerjaan Selesai</h2>
+                            <p>Isi informasi proyek, pekerjaan, dokumentasi Before & After, dan perbandingan progres.</p>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="app.resetForm()">
+                                <i class="fa-solid fa-rotate-left"></i> Reset
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="app.saveReport('Draft')">
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan Draft
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="app.previewCurrentForm()">
+                                <i class="fa-solid fa-eye"></i> Preview Report
+                            </button>
+                            <button type="button" class="btn btn-docx" onclick="app.downloadDocxFromForm()">
+                                <i class="fa-solid fa-file-word"></i> Download Word (.DOCX)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 1. INFORMASI PROYEK -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fa-solid fa-building"></i>
+                            <h3>1. Informasi Proyek</h3>
+                        </div>
+                        <div class="form-grid-4">
+                            <div class="form-group">
+                                <label for="formProjectName" class="required">Nama Proyek</label>
+                                <input type="text" id="formProjectName" class="form-control" required placeholder="Contoh: Pembangunan Gedung A">
+                            </div>
+                            <div class="form-group">
+                                <label for="formNoBap" class="required">Nomor Laporan</label>
+                                <input type="text" id="formNoBap" class="form-control" required placeholder="Contoh: WCR/2026/09/001">
+                            </div>
+                            <div class="form-group">
+                                <label for="formWorkDate" class="required">Tanggal Laporan</label>
+                                <input type="date" id="formWorkDate" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="formLocation" class="required">Lokasi Proyek</label>
+                                <input type="text" id="formLocation" class="form-control" required placeholder="Contoh: Gedung A - Lantai 2">
+                            </div>
+                            <div class="form-group">
+                                <label for="formSupervisor" class="required">Nama Pelaksana / Supervisor</label>
+                                <input type="text" id="formSupervisor" class="form-control" required placeholder="Contoh: Ir. Budi Santoso">
+                            </div>
+                            <div class="form-group">
+                                <label for="formContractor" class="required">Kontraktor / Perusahaan</label>
+                                <input type="text" id="formContractor" class="form-control" required placeholder="Contoh: PT. Jaya Konstruksi">
+                            </div>
+                            <div class="form-group">
+                                <label for="formClient" class="required">Nama Owner / Client</label>
+                                <input type="text" id="formClient" class="form-control" required placeholder="Contoh: PT. Nusantara Land">
+                            </div>
+                            <div class="form-group">
+                                <label for="formWorkNo">Nomor Pekerjaan (Opsional)</label>
+                                <input type="text" id="formWorkNo" class="form-control" placeholder="Contoh: WO-8842">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. INFORMASI PEKERJAAN -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fa-solid fa-list-check"></i>
+                            <h3>2. Informasi Pekerjaan</h3>
+                        </div>
+                        <div class="form-grid-3">
+                            <div class="form-group">
+                                <label for="formWorkName" class="required">Nama Pekerjaan</label>
+                                <input type="text" id="formWorkName" class="form-control" required placeholder="Contoh: Pemasangan Keramik Lantai">
+                            </div>
+                            <div class="form-group">
+                                <label for="formWorkType" class="required">Jenis Pekerjaan</label>
+                                <input type="text" id="formWorkType" class="form-control" required placeholder="Contoh: Pekerjaan Finishing / Arsitektur">
+                            </div>
+                            <div class="form-group">
+                                <label for="formArea" class="required">Area / Lokasi Spesifik Pekerjaan</label>
+                                <input type="text" id="formArea" class="form-control" required placeholder="Contoh: Bathroom Lt. 2 - Toilet Pria">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. DOKUMENTASI BEFORE -->
+                    <div class="form-section">
+                        <div class="section-title-between">
+                            <div class="section-title">
+                                <i class="fa-solid fa-images text-amber"></i>
+                                <h3>3. Dokumentasi BEFORE (Kondisi Awal)</h3>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-amber" onclick="app.triggerAddBeforePhoto()">
+                                <i class="fa-solid fa-plus"></i> Tambah Foto Before
+                            </button>
+                        </div>
+                        
+                        <!-- Drag & Drop Zone -->
+                        <div class="dropzone" id="beforeDropzone">
+                            <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+                            <p>Drag & Drop foto BEFORE di sini atau <span class="browse-link" onclick="app.triggerAddBeforePhoto()">Pilih File</span></p>
+                            <input type="file" id="beforeFileInput" accept="image/*" multiple class="d-none" onchange="app.handleBeforeFiles(event)">
+                        </div>
+
+                        <!-- Before Cards Grid -->
+                        <div class="photo-cards-grid" id="beforePhotosContainer">
+                            <!-- Dynamic Cards -->
+                        </div>
+                    </div>
+
+                    <!-- 4. DOKUMENTASI AFTER -->
+                    <div class="form-section">
+                        <div class="section-title-between">
+                            <div class="section-title">
+                                <i class="fa-solid fa-images text-emerald"></i>
+                                <h3>4. Dokumentasi AFTER (Hasil Pekerjaan)</h3>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-success" onclick="app.triggerAddAfterPhoto()">
+                                <i class="fa-solid fa-plus"></i> Tambah Foto After
+                            </button>
+                        </div>
+                        
+                        <!-- Drag & Drop Zone -->
+                        <div class="dropzone" id="afterDropzone">
+                            <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+                            <p>Drag & Drop foto AFTER di sini atau <span class="browse-link" onclick="app.triggerAddAfterPhoto()">Pilih File</span></p>
+                            <input type="file" id="afterFileInput" accept="image/*" multiple class="d-none" onchange="app.handleAfterFiles(event)">
+                        </div>
+
+                        <!-- After Cards Grid -->
+                        <div class="photo-cards-grid" id="afterPhotosContainer">
+                            <!-- Dynamic Cards -->
+                        </div>
+                    </div>
+
+                    <!-- 5. BEFORE VS AFTER COMPARISON -->
+                    <div class="form-section">
+                        <div class="section-title-between">
+                            <div class="section-title">
+                                <i class="fa-solid fa-code-compare text-blue"></i>
+                                <h3>5. Before vs After Comparison (Pasangan Progres)</h3>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="app.addComparisonPair()">
+                                <i class="fa-solid fa-link"></i> Pasangkan Before & After
+                            </button>
+                        </div>
+                        
+                        <div class="comparison-container" id="comparisonContainer">
+                            <!-- Dynamic Comparison Pairs -->
+                        </div>
+                    </div>
+
+                    <!-- Submit Footer -->
+                    <div class="form-submit-bar">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fa-solid fa-circle-check"></i> Simpan Laporan Selesai
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- TAB 3: DAFTAR LAPORAN (ALL, DRAFT, COMPLETED) -->
+            <section id="tab-reports-all" class="tab-pane">
+                <div class="table-card">
+                    <div class="card-header">
+                        <h3 id="tableTitleText"><i class="fa-solid fa-list"></i> Semuanya Laporan</h3>
+                        <div class="header-search">
+                            <input type="text" id="listSearchInput" class="form-control form-control-sm" placeholder="Cari laporan..." oninput="app.renderFilteredTable()">
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="mainReportsTable">
+                                <thead>
+                                    <tr>
+                                        <th>No. Laporan</th>
+                                        <th>Tanggal</th>
+                                        <th>Nama Pekerjaan</th>
+                                        <th>Area / Lokasi</th>
+                                        <th>Pelaksana</th>
+                                        <th>Status</th>
+                                        <th style="width: 220px; text-align: center;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mainReportsTbody">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-reports-draft" class="tab-pane">
+                <!-- Rendered dynamically -->
+            </section>
+
+            <section id="tab-reports-completed" class="tab-pane">
+                <!-- Rendered dynamically -->
+            </section>
+
+            <!-- TAB 6: PENGATURAN -->
+            <section id="tab-settings" class="tab-pane">
+                <div class="settings-grid">
+                    <div class="dash-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-sliders"></i> Pengaturan Aplikasi</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group mb-3">
+                                <label for="settingDefaultSupervisor">Nama Supervisor Default:</label>
+                                <input type="text" id="settingDefaultSupervisor" class="form-control" value="Ir. Budi Santoso">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="settingDefaultContractor">Nama Kontraktor Default:</label>
+                                <input type="text" id="settingDefaultContractor" class="form-control" value="PT. Jaya Konstruksi">
+                            </div>
+                            <button class="btn btn-primary" onclick="app.saveSettings()">Simpan Pengaturan</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- PREVIEW MODAL (A4 PORTRAIT REPORT PREVIEW) -->
+    <div class="modal-backdrop" id="previewModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-header">
+                <h3>Pratinjau Dokumen Laporan (A4 Portrait)</h3>
+                <button class="modal-close" onclick="app.closePreviewModal()">&times;</button>
+            </div>
+            <div class="modal-body bg-gray" id="previewModalBody">
+                <!-- A4 Sheet Preview -->
+                <div class="a4-sheet" id="a4ReportSheet">
+                    <!-- Dynamic Document HTML -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="app.closePreviewModal()">Tutup</button>
+                <button class="btn btn-docx" id="modalBtnDownloadDocx">
+                    <i class="fa-solid fa-file-word"></i> Download Word (.DOCX)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Libraries -->
+    <script src="js/lib/docx.umd.js"></script>
+    <script src="js/lib/filesaver.min.js"></script>
+    
+    <!-- Application Scripts -->
+    <script src="js/sample-data.js"></script>
+    <script src="js/docx-generator.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
