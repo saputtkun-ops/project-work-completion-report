@@ -1,5 +1,6 @@
 /**
  * LAPORAN PEKERJAAN PROYEK - WORK COMPLETION REPORT CORE ENGINE
+ * Features: Auto-Save Engine (LocalStorage & Draft Persistence across Browser Sessions), Multi-Page A4 Export, & Docx Engine.
  */
 
 class ProjectReportApp {
@@ -13,6 +14,8 @@ class ProjectReportApp {
         this.currentAfterPhotos = [];
         this.currentComparisons = [];
         
+        this.autoSaveTimer = null;
+        
         this.init();
     }
 
@@ -20,17 +23,27 @@ class ProjectReportApp {
         this.loadState();
         this.bindEvents();
         this.setupDropzones();
+        this.setupRealtimeFormAutoSave();
         this.renderDashboard();
         this.renderFilteredTable();
-        this.resetForm();
+        
+        // Check for saved active draft on startup, otherwise load initial form
+        if (!this.restoreActiveFormDraft()) {
+            this.resetForm();
+        }
     }
 
+    /* ==========================================================================
+       LOCALSTORAGE AUTO-SAVE & SESSION PERSISTENCE ENGINE
+       ========================================================================== */
+
     loadState() {
-        const saved = localStorage.getItem('laporan_proyek_reports');
-        if (saved) {
+        const savedReports = localStorage.getItem('laporan_proyek_reports');
+        if (savedReports) {
             try {
-                this.reports = JSON.parse(saved);
+                this.reports = JSON.parse(savedReports);
             } catch (e) {
+                console.error("Failed to load saved reports", e);
                 this.reports = [...INITIAL_REPORTS];
             }
         } else {
@@ -41,7 +54,87 @@ class ProjectReportApp {
 
     saveState() {
         localStorage.setItem('laporan_proyek_reports', JSON.stringify(this.reports));
+        this.triggerAutoSaveIndicator();
     }
+
+    triggerAutoSaveIndicator() {
+        const badge = document.getElementById('autoSaveIndicator');
+        if (badge) {
+            badge.style.transform = 'scale(1.05)';
+            badge.style.opacity = '1';
+            setTimeout(() => {
+                badge.style.transform = 'scale(1)';
+            }, 300);
+        }
+    }
+
+    setupRealtimeFormAutoSave() {
+        const form = document.getElementById('reportForm');
+        if (!form) return;
+
+        // Auto-save active form inputs on typing / changing
+        const inputHandler = () => {
+            clearTimeout(this.autoSaveTimer);
+            this.autoSaveTimer = setTimeout(() => {
+                this.saveActiveFormDraft();
+            }, 500);
+        };
+
+        form.querySelectorAll('input, select, textarea').forEach(elem => {
+            elem.addEventListener('input', inputHandler);
+            elem.addEventListener('change', inputHandler);
+        });
+    }
+
+    saveActiveFormDraft() {
+        const draft = this.getFormData('Draft');
+        localStorage.setItem('laporan_proyek_active_draft', JSON.stringify(draft));
+        this.triggerAutoSaveIndicator();
+    }
+
+    restoreActiveFormDraft() {
+        const savedDraft = localStorage.getItem('laporan_proyek_active_draft');
+        if (!savedDraft) return false;
+
+        try {
+            const draft = JSON.parse(savedDraft);
+            if (!draft || !draft.noBap) return false;
+
+            document.getElementById('reportId').value = draft.id || '';
+            document.getElementById('formProjectName').value = draft.projectName || '';
+            document.getElementById('formNoBap').value = draft.noBap || '';
+            document.getElementById('formWorkDate').value = draft.workDate || '';
+            document.getElementById('formLocation').value = draft.location || '';
+            document.getElementById('formSupervisor').value = draft.supervisor || '';
+            document.getElementById('formContractor').value = draft.contractor || '';
+            document.getElementById('formClient').value = draft.client || '';
+            document.getElementById('formWorkNo').value = draft.workNo || '';
+
+            document.getElementById('formWorkName').value = draft.workName || '';
+            document.getElementById('formWorkType').value = draft.workType || '';
+            document.getElementById('formArea').value = draft.area || '';
+
+            this.currentBeforePhotos = draft.beforePhotos || [];
+            this.currentAfterPhotos = draft.afterPhotos || [];
+            this.currentComparisons = draft.comparisons || [];
+
+            this.renderBeforePhotos();
+            this.renderAfterPhotos();
+            this.renderComparisons();
+            return true;
+        } catch (e) {
+            console.error("Failed to restore form draft", e);
+            return false;
+        }
+    }
+
+    clearActiveFormDraft() {
+        localStorage.removeItem('laporan_proyek_active_draft');
+    }
+
+    /* ==========================================================================
+       NAVIGATION & TABS
+       ========================================================================== */
 
     bindEvents() {
         // Toggle Sidebar on Mobile & Tablet
@@ -157,7 +250,7 @@ class ProjectReportApp {
 
     processBeforeFiles(files) {
         if (!files || files.length === 0) return;
-        const defaultArea = document.getElementById('formArea').value || 'Bathroom Lt. 2';
+        const defaultArea = document.getElementById('formArea').value || 'Area Utama';
 
         Array.from(files).forEach(file => {
             if (!file.type.startsWith('image/')) return;
@@ -171,6 +264,7 @@ class ProjectReportApp {
                     notes: ""
                 });
                 this.renderBeforePhotos();
+                this.saveActiveFormDraft();
             };
             reader.readAsDataURL(file);
         });
@@ -178,7 +272,7 @@ class ProjectReportApp {
 
     processAfterFiles(files) {
         if (!files || files.length === 0) return;
-        const defaultArea = document.getElementById('formArea').value || 'Bathroom Lt. 2';
+        const defaultArea = document.getElementById('formArea').value || 'Area Utama';
 
         Array.from(files).forEach(file => {
             if (!file.type.startsWith('image/')) return;
@@ -193,6 +287,7 @@ class ProjectReportApp {
                     notes: ""
                 });
                 this.renderAfterPhotos();
+                this.saveActiveFormDraft();
             };
             reader.readAsDataURL(file);
         });
@@ -247,6 +342,7 @@ class ProjectReportApp {
     updateBeforePhoto(idx, key, val) {
         if (this.currentBeforePhotos[idx]) {
             this.currentBeforePhotos[idx][key] = val;
+            this.saveActiveFormDraft();
         }
     }
 
@@ -257,12 +353,14 @@ class ProjectReportApp {
             this.currentBeforePhotos[idx] = this.currentBeforePhotos[target];
             this.currentBeforePhotos[target] = temp;
             this.renderBeforePhotos();
+            this.saveActiveFormDraft();
         }
     }
 
     removeBeforePhoto(idx) {
         this.currentBeforePhotos.splice(idx, 1);
         this.renderBeforePhotos();
+        this.saveActiveFormDraft();
     }
 
     /* RENDER AFTER PHOTOS CARDS */
@@ -318,6 +416,7 @@ class ProjectReportApp {
     updateAfterPhoto(idx, key, val) {
         if (this.currentAfterPhotos[idx]) {
             this.currentAfterPhotos[idx][key] = val;
+            this.saveActiveFormDraft();
         }
     }
 
@@ -328,12 +427,14 @@ class ProjectReportApp {
             this.currentAfterPhotos[idx] = this.currentAfterPhotos[target];
             this.currentAfterPhotos[target] = temp;
             this.renderAfterPhotos();
+            this.saveActiveFormDraft();
         }
     }
 
     removeAfterPhoto(idx) {
         this.currentAfterPhotos.splice(idx, 1);
         this.renderAfterPhotos();
+        this.saveActiveFormDraft();
     }
 
     /* ==========================================================================
@@ -347,15 +448,16 @@ class ProjectReportApp {
 
         this.currentComparisons.push({
             id: `c_${Date.now()}_${idx}`,
-            area: document.getElementById('formArea').value || 'Bathroom Lt. 2',
-            beforeUrl: bPhoto ? bPhoto.url : '',
+            area: document.getElementById('formArea').value || `Point ${String(idx+1).padStart(2, '0')}: Area Spesifik`,
+            beforeUrl: bPhoto ? bPhoto.url : 'assets/img/concrete.jpg',
             beforeDesc: bPhoto ? bPhoto.condition : 'Kondisi lantai masih berupa screed kasar.',
-            afterUrl: aPhoto ? aPhoto.url : '',
-            methodDesc: aPhoto ? aPhoto.method : 'Dilakukan pemasangan keramik sesuai spesifikasi.',
+            afterUrl: aPhoto ? aPhoto.url : 'assets/img/brickwork.jpg',
+            methodDesc: aPhoto ? aPhoto.method : 'Dilakukan pemasangan finishing sesuai spesifikasi.',
             afterDesc: aPhoto ? aPhoto.result : 'Pekerjaan selesai 100% dan rapi.'
         });
 
         this.renderComparisons();
+        this.saveActiveFormDraft();
     }
 
     renderComparisons() {
@@ -417,12 +519,14 @@ class ProjectReportApp {
     updateComp(idx, key, val) {
         if (this.currentComparisons[idx]) {
             this.currentComparisons[idx][key] = val;
+            this.saveActiveFormDraft();
         }
     }
 
     removeComparison(idx) {
         this.currentComparisons.splice(idx, 1);
         this.renderComparisons();
+        this.saveActiveFormDraft();
     }
 
     /* ==========================================================================
@@ -447,22 +551,34 @@ class ProjectReportApp {
         document.getElementById('formClient').value = 'PT. Nusantara Land';
         document.getElementById('formWorkNo').value = `WO-${randomNum}`;
 
-        document.getElementById('formWorkName').value = 'Pemasangan Keramik Lantai';
+        document.getElementById('formWorkName').value = 'Pemasangan Keramik & Finishing Toilet';
         document.getElementById('formWorkType').value = 'Finishing / Arsitektur';
-        document.getElementById('formArea').value = 'Bathroom Lt. 2';
+        document.getElementById('formArea').value = 'Toilet Pria Lt. 2';
 
-        // Sample photos
+        // Initial 4 points demo data
         this.currentBeforePhotos = [
-            { id: 'b1', url: 'assets/img/concrete.jpg', area: 'Bathroom Lt. 2', condition: 'Permukaan lantai masih berupa screed beton dan belum dilakukan pemasangan finishing keramik.', notes: 'Area bersih.' }
+            { id: 'b1', url: 'assets/img/concrete.jpg', area: 'Area 01 - Lantai Utama', condition: 'Permukaan lantai masih berupa screed beton kasar.', notes: '' },
+            { id: 'b2', url: 'assets/img/rebar.jpg', area: 'Area 02 - Floor Drain', condition: 'Pipa buangan air belum dipasang saringan.', notes: '' },
+            { id: 'b3', url: 'assets/img/brickwork.jpg', area: 'Area 03 - Dinding Bata', condition: 'Dinding belum diplester dan di-acian.', notes: '' },
+            { id: 'b4', url: 'assets/img/earthwork.jpg', area: 'Area 04 - Pondasi Wastafel', condition: 'Area kedudukan saluran pipa belum rapi.', notes: '' }
         ];
         this.currentAfterPhotos = [
-            { id: 'a1', url: 'assets/img/brickwork.jpg', area: 'Bathroom Lt. 2', method: 'Dilakukan pemasangan keramik lantai menggunakan adhesive mortar instan sesuai spesifikasi material.', result: 'Pekerjaan keramik lantai telah selesai 100% dan rata.', notes: 'Nat terisi rapi.' }
+            { id: 'a1', url: 'assets/img/brickwork.jpg', area: 'Area 01 - Lantai Utama', method: 'Pemasangan keramik 40x40cm mortar instan.', result: 'Keramik rata, nat rapi, elevasi pas.', notes: '' },
+            { id: 'a2', url: 'assets/img/earthwork.jpg', area: 'Area 02 - Floor Drain', method: 'Pemasangan saringan stainless steel.', result: 'Air mengalir lancar tanpa genangan.', notes: '' },
+            { id: 'a3', url: 'assets/img/concrete.jpg', area: 'Area 03 - Dinding Bata', method: 'Plesteran mortar instan & acian halus.', result: 'Dinding halus & putih bersih.', notes: '' },
+            { id: 'a4', url: 'assets/img/rebar.jpg', area: 'Area 04 - Pondasi Wastafel', method: 'Instalasi bracket & unit wastafel.', result: 'Wastafel kokoh & siap pakai.', notes: '' }
         ];
-        this.currentComparisons = [];
-        this.addComparisonPair();
+        this.currentComparisons = [
+            { id: 'c1', area: 'Point 01: Area Lantai Utama', beforeUrl: 'assets/img/concrete.jpg', beforeDesc: 'Screed beton kasar belum terpasang keramik.', afterUrl: 'assets/img/brickwork.jpg', methodDesc: 'Pemasangan keramik 40x40cm presisi.', afterDesc: 'Keramik terpasang rapi 100%.' },
+            { id: 'c2', area: 'Point 02: Area Floor Drain', beforeUrl: 'assets/img/rebar.jpg', beforeDesc: 'Saluran buangan belum ada saringan stainless.', afterUrl: 'assets/img/earthwork.jpg', methodDesc: 'Pemasangan floor drain 2 inci.', afterDesc: 'Floor drain terpasang rata & air lancar.' },
+            { id: 'c3', area: 'Point 03: Dinding & Plesteran', beforeUrl: 'assets/img/brickwork.jpg', beforeDesc: 'Pasangan bata belum diplester.', afterUrl: 'assets/img/concrete.jpg', methodDesc: 'Plesteran instan & acian halus.', afterDesc: 'Dinding rapi, rata, dan terawat.' },
+            { id: 'c4', area: 'Point 04: Meja Wastafel', beforeUrl: 'assets/img/earthwork.jpg', beforeDesc: 'Pipa air bersih & kotor belum tersambung.', afterUrl: 'assets/img/rebar.jpg', methodDesc: 'Pemasangan pipa & saniter.', afterDesc: 'Saniter berfungsi normal tanpa bocor.' }
+        ];
 
         this.renderBeforePhotos();
         this.renderAfterPhotos();
+        this.renderComparisons();
+        this.clearActiveFormDraft();
     }
 
     getFormData(statusStr = 'Selesai') {
@@ -505,7 +621,8 @@ class ProjectReportApp {
         }
 
         this.saveState();
-        alert(`Laporan [${report.noBap}] berhasil disimpan sebagai [${statusStr}]!`);
+        this.clearActiveFormDraft();
+        alert(`Laporan [${report.noBap}] berhasil disimpan secara permanen sebagai [${statusStr}]!`);
         this.switchTab(statusStr === 'Draft' ? 'reports-draft' : 'reports-completed');
     }
 
@@ -528,7 +645,7 @@ class ProjectReportApp {
 
         const recent = this.reports.slice(0, 5);
         if (recent.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted p-3">Belum ada laporan.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted p-3">Belum ada laporan tersimpan.</td></tr>`;
             return;
         }
 
@@ -577,7 +694,7 @@ class ProjectReportApp {
         if (!tbody) return;
 
         if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted p-4">Tidak ada laporan yang ditemukan.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted p-4">Tidak ada laporan tersimpan.</td></tr>`;
             return;
         }
 
@@ -632,12 +749,13 @@ class ProjectReportApp {
         this.renderBeforePhotos();
         this.renderAfterPhotos();
         this.renderComparisons();
+        this.saveActiveFormDraft();
 
         this.switchTab('create-report');
     }
 
     deleteReport(id) {
-        if (confirm('Hapus laporan pekerjaan ini?')) {
+        if (confirm('Apakah Anda yakin ingin menghapus laporan tersimpan ini?')) {
             this.reports = this.reports.filter(r => r.id !== id);
             this.saveState();
             this.renderFilteredTable();

@@ -208,6 +208,20 @@ body {
     color: var(--text-primary);
 }
 
+.auto-save-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background-color: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #047857;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
 /* Tab Panes */
 .tab-pane {
     display: none;
