@@ -1,6 +1,6 @@
 /**
- * DOCX GENERATOR ENGINE FOR LAPORAN PEKERJAAN PROYEK (1 PAGE A4 - 4 POINTS BEFORE & AFTER)
- * Generates genuine Microsoft Word (.docx) files that fit 4 points of Before & After documentation into 1 single A4 Portrait page!
+ * DOCX GENERATOR ENGINE FOR LAPORAN PEKERJAAN PROYEK (MULTI-PAGE AUTO-PAGINATION)
+ * Automatically splits many points into pages (4 points per A4 page) inside 1 SINGLE Microsoft Word (.docx) file!
  */
 
 async function exportReportToDocx(report) {
@@ -11,7 +11,7 @@ async function exportReportToDocx(report) {
 
     const {
         Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-        ImageRun, Header, Footer, PageNumber, WidthType, AlignmentType, BorderStyle
+        ImageRun, Header, Footer, PageNumber, WidthType, AlignmentType, BorderStyle, PageBreak
     } = window.docx;
 
     // Helper: Convert DataURL / Image URL to Uint8Array for docx ImageRun
@@ -121,7 +121,7 @@ async function exportReportToDocx(report) {
 
     const docChildren = [];
 
-    // Title
+    // Title Block
     docChildren.push(
         new Paragraph({
             alignment: AlignmentType.CENTER,
@@ -176,113 +176,130 @@ async function exportReportToDocx(report) {
         new Paragraph({ text: "", space: { after: 60 } })
     );
 
-    // Section Header
-    docChildren.push(
-        new Paragraph({
-            space: { before: 40, after: 40 },
-            children: [
-                new TextRun({ text: "DOKUMENTASI BEFORE & AFTER (4 POINT PEKERJAAN)", bold: true, size: 17, color: COLOR_PRIMARY })
-            ]
-        })
-    );
+    // Chunk comparisons into groups of 4 points per page
+    const comparisons = (report.comparisons && report.comparisons.length > 0) ? report.comparisons : [
+        { area: "Point 01: Area Utama", beforeUrl: "assets/img/concrete.jpg", beforeDesc: "Screed beton belum terpasang keramik.", afterUrl: "assets/img/brickwork.jpg", methodDesc: "Pemasangan keramik 40x40cm.", afterDesc: "Keramik terpasang rapi 100%." }
+    ];
 
-    // 4 Points Comparisons (Fit 4 Points on 1 Page)
-    const comparisons = report.comparisons && report.comparisons.length >= 4 
-        ? report.comparisons.slice(0, 4)
-        : [
-            report.comparisons?.[0] || { area: "Point 01: Area Utama", beforeUrl: "assets/img/concrete.jpg", beforeDesc: "Screed beton belum terpasang keramik.", afterUrl: "assets/img/brickwork.jpg", methodDesc: "Pemasangan keramik 40x40cm.", afterDesc: "Keramik terpasang rapi 100%." },
-            report.comparisons?.[1] || { area: "Point 02: Area Drainase", beforeUrl: "assets/img/rebar.jpg", beforeDesc: "Pipa buangan belum ada floor drain.", afterUrl: "assets/img/earthwork.jpg", methodDesc: "Pemasangan saringan stainless.", afterDesc: "Floor drain terpasang rata & lancar." },
-            report.comparisons?.[2] || { area: "Point 03: Area Dinding", beforeUrl: "assets/img/brickwork.jpg", beforeDesc: "Pasangan bata belum diplester.", afterUrl: "assets/img/concrete.jpg", methodDesc: "Plesteran & acian halus.", afterDesc: "Dinding rapi & halus." },
-            report.comparisons?.[3] || { area: "Point 04: Saniter & Pipe", beforeUrl: "assets/img/earthwork.jpg", beforeDesc: "Pipa air bersih & kotor terbuka.", afterUrl: "assets/img/rebar.jpg", methodDesc: "Instalasi fixture saniter.", afterDesc: "Saniter berfungsi tanpa bocor." }
-        ];
+    const POINTS_PER_PAGE = 4;
+    const totalPages = Math.ceil(comparisons.length / POINTS_PER_PAGE);
 
-    const compRows = [];
+    for (let pageIdx = 0; pageIdx < totalPages; pageIdx++) {
+        const pagePoints = comparisons.slice(pageIdx * POINTS_PER_PAGE, (pageIdx + 1) * POINTS_PER_PAGE);
 
-    for (let i = 0; i < comparisons.length; i++) {
-        const comp = comparisons[i];
-        const numStr = String(i + 1).padStart(2, '0');
+        if (pageIdx > 0) {
+            // Page Break for additional pages
+            docChildren.push(new Paragraph({ children: [new PageBreak()] }));
+            
+            // Subhead for Page 2, 3...
+            docChildren.push(
+                new Paragraph({
+                    space: { before: 40, after: 40 },
+                    children: [
+                        new TextRun({ text: `DOKUMENTASI BEFORE & AFTER (Halaman ${pageIdx + 1} dari ${totalPages})`, bold: true, size: 17, color: COLOR_PRIMARY })
+                    ]
+                })
+            );
+        } else {
+            docChildren.push(
+                new Paragraph({
+                    space: { before: 40, after: 40 },
+                    children: [
+                        new TextRun({ text: `DOKUMENTASI BEFORE & AFTER (Total: ${comparisons.length} Point)`, bold: true, size: 17, color: COLOR_PRIMARY })
+                    ]
+                })
+            );
+        }
 
-        const bImgBuf = comp.beforeUrl ? await urlToUint8Array(comp.beforeUrl) : null;
-        const aImgBuf = comp.afterUrl ? await urlToUint8Array(comp.afterUrl) : null;
+        const compRows = [];
 
-        compRows.push(
-            new TableRow({
-                children: [
-                    // BEFORE CELL
-                    new TableCell({
-                        width: { size: 50, type: WidthType.PERCENTAGE },
-                        borders: cellBorder,
-                        children: [
-                            new Paragraph({
-                                space: { before: 20, after: 20 },
-                                children: [
-                                    new TextRun({ text: `[${numStr}] BEFORE: ${comp.area}`, bold: true, size: 14, color: "B45309" })
-                                ]
-                            }),
-                            bImgBuf ? new Paragraph({
-                                alignment: AlignmentType.CENTER,
-                                space: { before: 20, after: 20 },
-                                children: [
-                                    new ImageRun({
-                                        data: bImgBuf,
-                                        transformation: { width: 145, height: 95 }
-                                    })
-                                ]
-                            }) : new Paragraph({ text: "[Foto Before]", size: 12 }),
-                            new Paragraph({
-                                space: { before: 20, after: 20 },
-                                children: [
-                                    new TextRun({ text: "Kondisi Awal: ", bold: true, size: 13 }),
-                                    new TextRun({ text: comp.beforeDesc || "-", size: 13 })
-                                ]
-                            })
-                        ]
-                    }),
+        for (let i = 0; i < pagePoints.length; i++) {
+            const comp = pagePoints[i];
+            const globalIndex = (pageIdx * POINTS_PER_PAGE) + i + 1;
+            const numStr = String(globalIndex).padStart(2, '0');
 
-                    // AFTER CELL
-                    new TableCell({
-                        width: { size: 50, type: WidthType.PERCENTAGE },
-                        borders: cellBorder,
-                        children: [
-                            new Paragraph({
-                                space: { before: 20, after: 20 },
-                                children: [
-                                    new TextRun({ text: `[${numStr}] AFTER: ${comp.area}`, bold: true, size: 14, color: "047857" })
-                                ]
-                            }),
-                            aImgBuf ? new Paragraph({
-                                alignment: AlignmentType.CENTER,
-                                space: { before: 20, after: 20 },
-                                children: [
-                                    new ImageRun({
-                                        data: aImgBuf,
-                                        transformation: { width: 145, height: 95 }
-                                    })
-                                ]
-                            }) : new Paragraph({ text: "[Foto After]", size: 12 }),
-                            new Paragraph({
-                                space: { before: 20, after: 20 },
-                                children: [
-                                    new TextRun({ text: "Hasil & Penyelesaian: ", bold: true, size: 13 }),
-                                    new TextRun({ text: `${comp.methodDesc || ''} ${comp.afterDesc || ''}`, size: 13 })
-                                ]
-                            })
-                        ]
-                    })
-                ]
-            })
+            const bImgBuf = comp.beforeUrl ? await urlToUint8Array(comp.beforeUrl) : null;
+            const aImgBuf = comp.afterUrl ? await urlToUint8Array(comp.afterUrl) : null;
+
+            compRows.push(
+                new TableRow({
+                    children: [
+                        // BEFORE CELL
+                        new TableCell({
+                            width: { size: 50, type: WidthType.PERCENTAGE },
+                            borders: cellBorder,
+                            children: [
+                                new Paragraph({
+                                    space: { before: 20, after: 20 },
+                                    children: [
+                                        new TextRun({ text: `[${numStr}] BEFORE: ${comp.area}`, bold: true, size: 14, color: "B45309" })
+                                    ]
+                                }),
+                                bImgBuf ? new Paragraph({
+                                    alignment: AlignmentType.CENTER,
+                                    space: { before: 20, after: 20 },
+                                    children: [
+                                        new ImageRun({
+                                            data: bImgBuf,
+                                            transformation: { width: 145, height: 95 }
+                                        })
+                                    ]
+                                }) : new Paragraph({ text: "[Foto Before]", size: 12 }),
+                                new Paragraph({
+                                    space: { before: 20, after: 20 },
+                                    children: [
+                                        new TextRun({ text: "Kondisi Awal: ", bold: true, size: 13 }),
+                                        new TextRun({ text: comp.beforeDesc || "-", size: 13 })
+                                    ]
+                                })
+                            ]
+                        }),
+
+                        // AFTER CELL
+                        new TableCell({
+                            width: { size: 50, type: WidthType.PERCENTAGE },
+                            borders: cellBorder,
+                            children: [
+                                new Paragraph({
+                                    space: { before: 20, after: 20 },
+                                    children: [
+                                        new TextRun({ text: `[${numStr}] AFTER: ${comp.area}`, bold: true, size: 14, color: "047857" })
+                                    ]
+                                }),
+                                aImgBuf ? new Paragraph({
+                                    alignment: AlignmentType.CENTER,
+                                    space: { before: 20, after: 20 },
+                                    children: [
+                                        new ImageRun({
+                                            data: aImgBuf,
+                                            transformation: { width: 145, height: 95 }
+                                        })
+                                    ]
+                                }) : new Paragraph({ text: "[Foto After]", size: 12 }),
+                                new Paragraph({
+                                    space: { before: 20, after: 20 },
+                                    children: [
+                                        new TextRun({ text: "Hasil & Penyelesaian: ", bold: true, size: 13 }),
+                                        new TextRun({ text: `${comp.methodDesc || ''} ${comp.afterDesc || ''}`, size: 13 })
+                                    ]
+                                })
+                            ]
+                        })
+                    ]
+                })
+            );
+        }
+
+        docChildren.push(
+            new Table({
+                width: { size: 100, type: WidthType.PERCENTAGE },
+                rows: compRows
+            }),
+            new Paragraph({ text: "", space: { after: 40 } })
         );
     }
 
-    docChildren.push(
-        new Table({
-            width: { size: 100, type: WidthType.PERCENTAGE },
-            rows: compRows
-        }),
-        new Paragraph({ text: "", space: { after: 60 } })
-    );
-
-    // Compact Kesimpulan
+    // Append Kesimpulan & Signatures on Last Page
     const workNameText = report.workName || "Pemasangan Keramik & Finishing";
     const areaText = report.area || report.location || "Toilet Pria Lt. 2";
 
@@ -291,14 +308,14 @@ async function exportReportToDocx(report) {
             space: { before: 20, after: 40 },
             children: [
                 new TextRun({
-                    text: `KESIMPULAN: Pekerjaan ${workNameText} pada area ${areaText} (4 point) telah selesai dilaksanakan 100% sesuai lingkup pekerjaan & spesifikasi teknis. Dokumentasi Before dan After terlampir di atas.`,
+                    text: `KESIMPULAN: Pekerjaan ${workNameText} pada area ${areaText} (Total: ${comparisons.length} point) telah selesai dilaksanakan 100% sesuai lingkup pekerjaan & spesifikasi teknis. Seluruh dokumentasi Before dan After terlampir di atas.`,
                     size: 13, bold: true
                 })
             ]
         })
     );
 
-    // Compact Signatures
+    // Signatures
     const sigRowTitle = new TableRow({
         children: [
             new TableCell({ borders: noBorder, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Dibuat Oleh:", bold: true, size: 14 })] })] }),
@@ -330,7 +347,7 @@ async function exportReportToDocx(report) {
         })
     );
 
-    // Create 1 Page Document (Margin: 0.5 in / 720 twips)
+    // Create Document (Single .docx file with automatic page breaks)
     const doc = new Document({
         sections: [
             {
@@ -356,7 +373,7 @@ async function exportReportToDocx(report) {
     });
 
     const blob = await Packer.toBlob(doc);
-    const fileName = `Laporan_Pekerjaan_1Lembar_${(report.noBap || 'BAP').replace(/\//g, '_')}.docx`;
+    const fileName = `Laporan_Pekerjaan_Full_${(report.noBap || 'BAP').replace(/\//g, '_')}.docx`;
     if (window.saveAs) {
         window.saveAs(blob, fileName);
     } else {

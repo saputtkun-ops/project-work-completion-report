@@ -662,99 +662,118 @@ class ProjectReportApp {
     }
 
     renderA4PreviewSheet(report) {
-        const sheet = document.getElementById('a4ReportSheet');
-        if (!sheet) return;
+        const modalBody = document.getElementById('previewModalBody');
+        if (!modalBody) return;
 
-        const comparisons = report.comparisons && report.comparisons.length >= 4 
-            ? report.comparisons.slice(0, 4)
-            : [
-                report.comparisons?.[0] || { area: "Point 01: Area Utama", beforeUrl: "assets/img/concrete.jpg", beforeDesc: "Screed beton belum terpasang keramik.", afterUrl: "assets/img/brickwork.jpg", methodDesc: "Pemasangan keramik 40x40cm.", afterDesc: "Keramik terpasang rapi 100%." },
-                report.comparisons?.[1] || { area: "Point 02: Area Drainase", beforeUrl: "assets/img/rebar.jpg", beforeDesc: "Pipa buangan belum ada floor drain.", afterUrl: "assets/img/earthwork.jpg", methodDesc: "Pemasangan saringan stainless.", afterDesc: "Floor drain terpasang rata & lancar." },
-                report.comparisons?.[2] || { area: "Point 03: Area Dinding", beforeUrl: "assets/img/brickwork.jpg", beforeDesc: "Pasangan bata belum diplester.", afterUrl: "assets/img/concrete.jpg", methodDesc: "Plesteran & acian halus.", afterDesc: "Dinding rapi & halus." },
-                report.comparisons?.[3] || { area: "Point 04: Saniter & Pipe", beforeUrl: "assets/img/earthwork.jpg", beforeDesc: "Pipa air bersih & kotor terbuka.", afterUrl: "assets/img/rebar.jpg", methodDesc: "Instalasi fixture saniter.", afterDesc: "Saniter berfungsi tanpa bocor." }
-            ];
+        const comparisons = (report.comparisons && report.comparisons.length > 0) ? report.comparisons : [
+            { area: "Point 01: Area Utama", beforeUrl: "assets/img/concrete.jpg", beforeDesc: "Screed beton belum terpasang keramik.", afterUrl: "assets/img/brickwork.jpg", methodDesc: "Pemasangan keramik 40x40cm.", afterDesc: "Keramik terpasang rapi 100%." }
+        ];
 
-        let pointsHtml = '';
-        comparisons.forEach((c, idx) => {
-            const numStr = String(idx + 1).padStart(2, '0');
-            pointsHtml += `
-                <div class="a4-point-row mb-2" style="border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px; background-color: #fafafa;">
-                    <div style="display: flex; gap: 10px; align-items: flex-start;">
-                        <!-- BEFORE COL -->
-                        <div style="flex: 1; display: flex; gap: 8px; align-items: center; border-right: 1px solid #cbd5e1; padding-right: 8px;">
-                            <img src="${c.beforeUrl || 'assets/img/concrete.jpg'}" style="width: 100px; height: 75px; object-fit: cover; border-radius: 3px; border: 1px solid #cbd5e1;">
-                            <div style="font-size: 10px; line-height: 1.3;">
-                                <strong class="text-amber">[${numStr}] BEFORE: ${c.area}</strong><br>
-                                <strong>Kondisi Awal:</strong> ${c.beforeDesc}
+        const POINTS_PER_PAGE = 4;
+        const totalPages = Math.ceil(comparisons.length / POINTS_PER_PAGE);
+
+        let fullDocumentHtml = '';
+
+        for (let pageIdx = 0; pageIdx < totalPages; pageIdx++) {
+            const pagePoints = comparisons.slice(pageIdx * POINTS_PER_PAGE, (pageIdx + 1) * POINTS_PER_PAGE);
+
+            let pointsHtml = '';
+            pagePoints.forEach((c, i) => {
+                const globalIndex = (pageIdx * POINTS_PER_PAGE) + i + 1;
+                const numStr = String(globalIndex).padStart(2, '0');
+                pointsHtml += `
+                    <div class="a4-point-row mb-2" style="border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px; background-color: #fafafa;">
+                        <div style="display: flex; gap: 10px; align-items: flex-start;">
+                            <!-- BEFORE COL -->
+                            <div style="flex: 1; display: flex; gap: 8px; align-items: center; border-right: 1px solid #cbd5e1; padding-right: 8px;">
+                                <img src="${c.beforeUrl || 'assets/img/concrete.jpg'}" style="width: 95px; height: 70px; object-fit: cover; border-radius: 3px; border: 1px solid #cbd5e1;">
+                                <div style="font-size: 10px; line-height: 1.3;">
+                                    <strong class="text-amber">[${numStr}] BEFORE: ${c.area}</strong><br>
+                                    <strong>Kondisi Awal:</strong> ${c.beforeDesc}
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- AFTER COL -->
-                        <div style="flex: 1; display: flex; gap: 8px; align-items: center;">
-                            <img src="${c.afterUrl || 'assets/img/brickwork.jpg'}" style="width: 100px; height: 75px; object-fit: cover; border-radius: 3px; border: 1px solid #cbd5e1;">
-                            <div style="font-size: 10px; line-height: 1.3;">
-                                <strong class="text-emerald">[${numStr}] AFTER: ${c.area}</strong><br>
-                                <strong>Hasil:</strong> ${c.methodDesc || ''} ${c.afterDesc || ''}
+                            <!-- AFTER COL -->
+                            <div style="flex: 1; display: flex; gap: 8px; align-items: center;">
+                                <img src="${c.afterUrl || 'assets/img/brickwork.jpg'}" style="width: 95px; height: 70px; object-fit: cover; border-radius: 3px; border: 1px solid #cbd5e1;">
+                                <div style="font-size: 10px; line-height: 1.3;">
+                                    <strong class="text-emerald">[${numStr}] AFTER: ${c.area}</strong><br>
+                                    <strong>Hasil:</strong> ${c.methodDesc || ''} ${c.afterDesc || ''}
+                                </div>
                             </div>
                         </div>
                     </div>
+                `;
+            });
+
+            const isLastPage = (pageIdx === totalPages - 1);
+            const footerSection = isLastPage ? `
+                <p style="font-size:10px; line-height:1.4; margin-top:10px; margin-bottom:12px;">
+                    <strong>KESIMPULAN:</strong> Pekerjaan <strong>${report.workName}</strong> pada area <strong>${report.area}</strong> (Total: ${comparisons.length} point) telah selesai dilaksanakan 100% sesuai lingkup pekerjaan & spesifikasi teknis.
+                </p>
+
+                <table style="width:100%; text-align:center; font-size:10px; margin-top:14px;">
+                    <tr>
+                        <td>Dibuat Oleh,<br><br><br><strong>(${report.supervisor})</strong><br><small>Pelaksana</small></td>
+                        <td>Diperiksa Oleh,<br><br><br><strong>(${report.contractor})</strong><br><small>Site Manager</small></td>
+                        <td>Disetujui Oleh,<br><br><br><strong>(${report.client})</strong><br><small>Konsultan MK / Owner</small></td>
+                    </tr>
+                </table>
+            ` : `
+                <div style="text-align:right; font-size:9px; color:#94a3b8; margin-top:10px;">Bersambung ke Halaman ${pageIdx + 2}...</div>
+            `;
+
+            fullDocumentHtml += `
+                <div class="a4-sheet mb-4" style="margin-bottom: 30px; page-break-after: always;">
+                    <div class="a4-header" style="border-bottom: 1.5px solid #0f172a; padding-bottom: 6px; margin-bottom: 10px;">
+                        <div>
+                            <h3 style="font-size:12px; font-weight:800;">${(report.contractor || 'PT. JAYA KONSTRUKSI').toUpperCase()}</h3>
+                            <p style="font-size:10px; color:#64748b;">General Contractor & Construction Services</p>
+                        </div>
+                        <div style="text-align:right;">
+                            <h4 style="font-size:11px; font-weight:700;">PROYEK: ${report.projectName}</h4>
+                            <p style="font-size:10px; color:#64748b;">No: ${report.noBap} | Hal ${pageIdx + 1} dari ${totalPages}</p>
+                        </div>
+                    </div>
+
+                    ${pageIdx === 0 ? `
+                    <div class="a4-title-block" style="margin-bottom: 10px;">
+                        <h1 style="font-size: 14px; color: #1e3a8a; font-weight: 800;">LAPORAN PEKERJAAN SELESAI (WORK COMPLETION REPORT)</h1>
+                    </div>
+
+                    <table class="a4-info-table" style="margin-bottom: 10px;">
+                        <tr>
+                            <td class="lbl">Nama Proyek</td>
+                            <td>${report.projectName}</td>
+                            <td class="lbl">Nomor Laporan</td>
+                            <td>${report.noBap}</td>
+                        </tr>
+                        <tr>
+                            <td class="lbl">Lokasi / Area</td>
+                            <td>${report.location}</td>
+                            <td class="lbl">Tanggal</td>
+                            <td>${report.workDate}</td>
+                        </tr>
+                        <tr>
+                            <td class="lbl">Nama Pekerjaan</td>
+                            <td>${report.workName}</td>
+                            <td class="lbl">Pelaksana</td>
+                            <td>${report.supervisor}</td>
+                        </tr>
+                    </table>
+                    ` : ''}
+
+                    <div class="a4-section-heading" style="font-size: 11px; margin-top: 6px; margin-bottom: 8px;">
+                        DOKUMENTASI BEFORE & AFTER (Halaman ${pageIdx + 1} dari ${totalPages} - Point ${pageIdx * POINTS_PER_PAGE + 1} s.d ${Math.min((pageIdx + 1) * POINTS_PER_PAGE, comparisons.length)})
+                    </div>
+                    
+                    ${pointsHtml}
+                    ${footerSection}
                 </div>
             `;
-        });
+        }
 
-        sheet.innerHTML = `
-            <div class="a4-header" style="border-bottom: 1.5px solid #0f172a; padding-bottom: 6px; margin-bottom: 10px;">
-                <div>
-                    <h3 style="font-size:12px; font-weight:800;">${(report.contractor || 'PT. JAYA KONSTRUKSI').toUpperCase()}</h3>
-                    <p style="font-size:10px; color:#64748b;">General Contractor & Construction Services</p>
-                </div>
-                <div style="text-align:right;">
-                    <h4 style="font-size:11px; font-weight:700;">PROYEK: ${report.projectName}</h4>
-                    <p style="font-size:10px; color:#64748b;">No: ${report.noBap}</p>
-                </div>
-            </div>
-
-            <div class="a4-title-block" style="margin-bottom: 10px;">
-                <h1 style="font-size: 14px; color: #1e3a8a; font-weight: 800;">LAPORAN PEKERJAAN SELESAI (WORK COMPLETION REPORT)</h1>
-            </div>
-
-            <table class="a4-info-table" style="margin-bottom: 10px;">
-                <tr>
-                    <td class="lbl">Nama Proyek</td>
-                    <td>${report.projectName}</td>
-                    <td class="lbl">Nomor Laporan</td>
-                    <td>${report.noBap}</td>
-                </tr>
-                <tr>
-                    <td class="lbl">Lokasi / Area</td>
-                    <td>${report.location}</td>
-                    <td class="lbl">Tanggal</td>
-                    <td>${report.workDate}</td>
-                </tr>
-                <tr>
-                    <td class="lbl">Nama Pekerjaan</td>
-                    <td>${report.workName}</td>
-                    <td class="lbl">Pelaksana</td>
-                    <td>${report.supervisor}</td>
-                </tr>
-            </table>
-
-            <div class="a4-section-heading" style="font-size: 11px; margin-top: 10px; margin-bottom: 8px;">DOKUMENTASI BEFORE & AFTER (4 POINT PEKERJAAN - 1 LEMBAR A4)</div>
-            
-            ${pointsHtml}
-
-            <p style="font-size:10px; line-height:1.4; margin-top:10px; margin-bottom:12px;">
-                <strong>KESIMPULAN:</strong> Pekerjaan <strong>${report.workName}</strong> pada area <strong>${report.area}</strong> (4 point) telah selesai dilaksanakan 100% sesuai lingkup pekerjaan & spesifikasi teknis yang ditentukan.
-            </p>
-
-            <table style="width:100%; text-align:center; font-size:10px; margin-top:14px;">
-                <tr>
-                    <td>Dibuat Oleh,<br><br><br><strong>(${report.supervisor})</strong><br><small>Pelaksana</small></td>
-                    <td>Diperiksa Oleh,<br><br><br><strong>(${report.contractor})</strong><br><small>Site Manager</small></td>
-                    <td>Disetujui Oleh,<br><br><br><strong>(${report.client})</strong><br><small>Konsultan MK / Owner</small></td>
-                </tr>
-            </table>
-        `;
+        modalBody.innerHTML = fullDocumentHtml;
 
         document.getElementById('modalBtnDownloadDocx').onclick = () => {
             exportReportToDocx(report);
