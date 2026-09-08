@@ -358,8 +358,17 @@ class ProjectReportApp {
             });
         }
 
-        // Tab buttons
+        // Desktop Nav buttons
         document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.getAttribute('data-tab');
+                this.switchTab(tab);
+                if (sidebar) sidebar.classList.remove('open');
+            });
+        });
+
+        // Mobile Bottom Nav items
+        document.querySelectorAll('.mobile-nav-item').forEach(btn => {
             btn.addEventListener('click', () => {
                 const tab = btn.getAttribute('data-tab');
                 this.switchTab(tab);
@@ -381,6 +390,10 @@ class ProjectReportApp {
         this.activeTab = tabId;
 
         document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-tab') === tabId);
+        });
+
+        document.querySelectorAll('.mobile-nav-item').forEach(btn => {
             btn.classList.toggle('active', btn.getAttribute('data-tab') === tabId);
         });
 
@@ -408,6 +421,15 @@ class ProjectReportApp {
         } else if (tabId.startsWith('reports-')) {
             this.renderFilteredTable();
         }
+    }
+
+    /* Mobile Camera Triggers */
+    triggerAddBeforeCamera() {
+        document.getElementById('beforeCameraInput').click();
+    }
+
+    triggerAddAfterCamera() {
+        document.getElementById('afterCameraInput').click();
     }
 
     /* ==========================================================================
