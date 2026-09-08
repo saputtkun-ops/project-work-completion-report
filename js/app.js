@@ -1031,22 +1031,22 @@ class ProjectReportApp {
                 const globalIndex = (pageIdx * POINTS_PER_PAGE) + i + 1;
                 const numStr = String(globalIndex).padStart(2, '0');
                 pointsHtml += `
-                    <div class="a4-point-row mb-2" style="border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px; background-color: #fafafa;">
+                    <div class="a4-point-row mb-2" style="border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px; background-color: #fafafa;">
                         <div style="display: flex; gap: 10px; align-items: flex-start;">
-                            <!-- BEFORE COL -->
-                            <div style="flex: 1; display: flex; gap: 8px; align-items: center; border-right: 1px solid #cbd5e1; padding-right: 8px;">
-                                <img src="${c.beforeUrl || 'assets/img/concrete.jpg'}" style="width: 95px; height: 70px; object-fit: cover; border-radius: 3px; border: 1px solid #cbd5e1;">
-                                <div style="font-size: 10px; line-height: 1.3;">
-                                    <strong class="text-amber">[${numStr}] BEFORE: ${c.area}</strong><br>
+                            <!-- BEFORE COL (Standard 11px/12px Font) -->
+                            <div style="flex: 1; display: flex; gap: 10px; align-items: center; border-right: 1px solid #cbd5e1; padding-right: 8px;">
+                                <img src="${c.beforeUrl || 'assets/img/concrete.jpg'}" style="width: 100px; height: 75px; object-fit: cover; border-radius: 3px; border: 1px solid #cbd5e1;">
+                                <div style="font-size: 11px; line-height: 1.4;">
+                                    <strong class="text-amber" style="font-size:12px;">[${numStr}] BEFORE: ${c.area}</strong><br>
                                     <strong>Kondisi Awal:</strong> ${c.beforeDesc}
                                 </div>
                             </div>
 
-                            <!-- AFTER COL -->
-                            <div style="flex: 1; display: flex; gap: 8px; align-items: center;">
-                                <img src="${c.afterUrl || 'assets/img/brickwork.jpg'}" style="width: 95px; height: 70px; object-fit: cover; border-radius: 3px; border: 1px solid #cbd5e1;">
-                                <div style="font-size: 10px; line-height: 1.3;">
-                                    <strong class="text-emerald">[${numStr}] AFTER: ${c.area}</strong><br>
+                            <!-- AFTER COL (Standard 11px/12px Font) -->
+                            <div style="flex: 1; display: flex; gap: 10px; align-items: center;">
+                                <img src="${c.afterUrl || 'assets/img/brickwork.jpg'}" style="width: 100px; height: 75px; object-fit: cover; border-radius: 3px; border: 1px solid #cbd5e1;">
+                                <div style="font-size: 11px; line-height: 1.4;">
+                                    <strong class="text-emerald" style="font-size:12px;">[${numStr}] AFTER: ${c.area}</strong><br>
                                     <strong>Hasil:</strong> ${c.methodDesc || ''} ${c.afterDesc || ''}
                                 </div>
                             </div>
@@ -1057,11 +1057,11 @@ class ProjectReportApp {
 
             const isLastPage = (pageIdx === totalPages - 1);
             const footerSection = isLastPage ? `
-                <p style="font-size:10px; line-height:1.4; margin-top:10px; margin-bottom:12px;">
+                <p style="font-size:11px; line-height:1.5; margin-top:10px; margin-bottom:12px;">
                     <strong>KESIMPULAN:</strong> Pekerjaan <strong>${report.workName}</strong> pada area <strong>${report.area}</strong> (Total: ${comparisons.length} point) telah selesai dilaksanakan 100% sesuai lingkup pekerjaan & spesifikasi teknis.
                 </p>
 
-                <table style="width:100%; text-align:center; font-size:10px; margin-top:14px;">
+                <table style="width:100%; text-align:center; font-size:11px; margin-top:14px;">
                     <tr>
                         <td>Dibuat Oleh,<br><br><br><strong>(${report.supervisor})</strong><br><small>Pelaksana</small></td>
                         <td>Diperiksa Oleh,<br><br><br><strong>(${report.contractor})</strong><br><small>Site Manager</small></td>
@@ -1069,7 +1069,7 @@ class ProjectReportApp {
                     </tr>
                 </table>
             ` : `
-                <div style="text-align:right; font-size:9px; color:#94a3b8; margin-top:10px;">Bersambung ke Halaman ${pageIdx + 2}...</div>
+                <div style="text-align:right; font-size:10px; color:#94a3b8; margin-top:10px;">Bersambung ke Halaman ${pageIdx + 2}...</div>
             `;
 
             fullDocumentHtml += `

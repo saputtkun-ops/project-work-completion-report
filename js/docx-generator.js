@@ -1,6 +1,6 @@
 /**
- * DOCX GENERATOR ENGINE FOR LAPORAN PEKERJAAN PROYEK (MULTI-PAGE AUTO-PAGINATION)
- * Automatically splits many points into pages (4 points per A4 page) inside 1 SINGLE Microsoft Word (.docx) file!
+ * DOCX GENERATOR ENGINE FOR LAPORAN PEKERJAAN PROYEK (STANDARD 11/12 PT PRINT FONT SIZE)
+ * Generates genuine Microsoft Word (.docx) files with standard 11pt/12pt font sizes for clear print legibility.
  */
 
 async function exportReportToDocx(report) {
@@ -34,10 +34,10 @@ async function exportReportToDocx(report) {
     const COLOR_BORDER = "CBD5E1";
 
     const cellBorder = {
-        top: { style: BorderStyle.SINGLE, size: 2, color: COLOR_BORDER },
-        bottom: { style: BorderStyle.SINGLE, size: 2, color: COLOR_BORDER },
-        left: { style: BorderStyle.SINGLE, size: 2, color: COLOR_BORDER },
-        right: { style: BorderStyle.SINGLE, size: 2, color: COLOR_BORDER }
+        top: { style: BorderStyle.SINGLE, size: 4, color: COLOR_BORDER },
+        bottom: { style: BorderStyle.SINGLE, size: 4, color: COLOR_BORDER },
+        left: { style: BorderStyle.SINGLE, size: 4, color: COLOR_BORDER },
+        right: { style: BorderStyle.SINGLE, size: 4, color: COLOR_BORDER }
     };
 
     const noBorder = {
@@ -47,7 +47,7 @@ async function exportReportToDocx(report) {
         right: { style: BorderStyle.NONE }
     };
 
-    // Header & Footer
+    // Header & Footer (11pt / 12pt)
     const docHeader = new Header({
         children: [
             new Table({
@@ -61,7 +61,7 @@ async function exportReportToDocx(report) {
                                 children: [
                                     new Paragraph({
                                         children: [
-                                            new TextRun({ text: (report.contractor || "PT. JAYA KONSTRUKSI").toUpperCase(), bold: true, size: 15, color: COLOR_NAVY })
+                                            new TextRun({ text: (report.contractor || "PT. JAYA KONSTRUKSI").toUpperCase(), bold: true, size: 22, color: COLOR_NAVY })
                                         ]
                                     })
                                 ]
@@ -73,7 +73,7 @@ async function exportReportToDocx(report) {
                                     new Paragraph({
                                         alignment: AlignmentType.RIGHT,
                                         children: [
-                                            new TextRun({ text: report.projectName || "Proyek Konstruksi", bold: true, size: 14, color: "64748B" })
+                                            new TextRun({ text: report.projectName || "Proyek Konstruksi", bold: true, size: 22, color: "64748B" })
                                         ]
                                     })
                                 ]
@@ -95,7 +95,7 @@ async function exportReportToDocx(report) {
                             new TableCell({
                                 width: { size: 60, type: WidthType.PERCENTAGE },
                                 borders: noBorder,
-                                children: [new Paragraph({ children: [new TextRun({ text: "Project Work Completion Report", size: 14, color: "94A3B8" })] })]
+                                children: [new Paragraph({ children: [new TextRun({ text: "Project Work Completion Report", size: 22, color: "94A3B8" })] })]
                             }),
                             new TableCell({
                                 width: { size: 40, type: WidthType.PERCENTAGE },
@@ -104,10 +104,10 @@ async function exportReportToDocx(report) {
                                     new Paragraph({
                                         alignment: AlignmentType.RIGHT,
                                         children: [
-                                            new TextRun({ text: "Halaman ", size: 14, color: "94A3B8" }),
-                                            new TextRun({ children: [PageNumber.CURRENT], size: 14, color: "94A3B8" }),
-                                            new TextRun({ text: " dari ", size: 14, color: "94A3B8" }),
-                                            new TextRun({ children: [PageNumber.TOTAL_PAGES], size: 14, color: "94A3B8" })
+                                            new TextRun({ text: "Halaman ", size: 22, color: "94A3B8" }),
+                                            new TextRun({ children: [PageNumber.CURRENT], size: 22, color: "94A3B8" }),
+                                            new TextRun({ text: " dari ", size: 22, color: "94A3B8" }),
+                                            new TextRun({ children: [PageNumber.TOTAL_PAGES], size: 22, color: "94A3B8" })
                                         ]
                                     })
                                 ]
@@ -121,18 +121,18 @@ async function exportReportToDocx(report) {
 
     const docChildren = [];
 
-    // Title Block
+    // Title (14pt / 28 half-points)
     docChildren.push(
         new Paragraph({
             alignment: AlignmentType.CENTER,
-            space: { before: 40, after: 20 },
+            space: { before: 60, after: 40 },
             children: [
-                new TextRun({ text: "LAPORAN PEKERJAAN SELESAI (WORK COMPLETION REPORT)", bold: true, size: 22, color: COLOR_PRIMARY })
+                new TextRun({ text: "LAPORAN PEKERJAAN SELESAI (WORK COMPLETION REPORT)", bold: true, size: 26, color: COLOR_PRIMARY })
             ]
         })
     );
 
-    // Metadata Table (Compact)
+    // Metadata Table (Standard 11pt / 22 half-points font size)
     const infoRows = [
         ["Nama Proyek", report.projectName || "-", "No. Laporan", report.noBap || "-"],
         ["Lokasi / Area", report.location || "-", "Tanggal", report.workDate || "-"],
@@ -143,26 +143,26 @@ async function exportReportToDocx(report) {
         return new TableRow({
             children: [
                 new TableCell({
-                    width: { size: 18, type: WidthType.PERCENTAGE },
+                    width: { size: 20, type: WidthType.PERCENTAGE },
                     shading: { fill: COLOR_GRAY_BG },
                     borders: cellBorder,
-                    children: [new Paragraph({ children: [new TextRun({ text: row[0], bold: true, size: 15, color: COLOR_NAVY })] })]
+                    children: [new Paragraph({ children: [new TextRun({ text: row[0], bold: true, size: 22, color: COLOR_NAVY })] })]
                 }),
                 new TableCell({
-                    width: { size: 32, type: WidthType.PERCENTAGE },
+                    width: { size: 30, type: WidthType.PERCENTAGE },
                     borders: cellBorder,
-                    children: [new Paragraph({ children: [new TextRun({ text: row[1], size: 15 })] })]
+                    children: [new Paragraph({ children: [new TextRun({ text: row[1], size: 22 })] })]
                 }),
                 new TableCell({
-                    width: { size: 18, type: WidthType.PERCENTAGE },
+                    width: { size: 20, type: WidthType.PERCENTAGE },
                     shading: { fill: COLOR_GRAY_BG },
                     borders: cellBorder,
-                    children: [new Paragraph({ children: [new TextRun({ text: row[2], bold: true, size: 15, color: COLOR_NAVY })] })]
+                    children: [new Paragraph({ children: [new TextRun({ text: row[2], bold: true, size: 22, color: COLOR_NAVY })] })]
                 }),
                 new TableCell({
-                    width: { size: 32, type: WidthType.PERCENTAGE },
+                    width: { size: 30, type: WidthType.PERCENTAGE },
                     borders: cellBorder,
-                    children: [new Paragraph({ children: [new TextRun({ text: row[3], size: 15 })] })]
+                    children: [new Paragraph({ children: [new TextRun({ text: row[3], size: 22 })] })]
                 })
             ]
         });
@@ -173,7 +173,7 @@ async function exportReportToDocx(report) {
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows: tableRows
         }),
-        new Paragraph({ text: "", space: { after: 60 } })
+        new Paragraph({ text: "", space: { after: 100 } })
     );
 
     // Chunk comparisons into groups of 4 points per page
@@ -188,24 +188,21 @@ async function exportReportToDocx(report) {
         const pagePoints = comparisons.slice(pageIdx * POINTS_PER_PAGE, (pageIdx + 1) * POINTS_PER_PAGE);
 
         if (pageIdx > 0) {
-            // Page Break for additional pages
             docChildren.push(new Paragraph({ children: [new PageBreak()] }));
-            
-            // Subhead for Page 2, 3...
             docChildren.push(
                 new Paragraph({
-                    space: { before: 40, after: 40 },
+                    space: { before: 60, after: 60 },
                     children: [
-                        new TextRun({ text: `DOKUMENTASI BEFORE & AFTER (Halaman ${pageIdx + 1} dari ${totalPages})`, bold: true, size: 17, color: COLOR_PRIMARY })
+                        new TextRun({ text: `DOKUMENTASI BEFORE & AFTER (Halaman ${pageIdx + 1} dari ${totalPages})`, bold: true, size: 24, color: COLOR_PRIMARY })
                     ]
                 })
             );
         } else {
             docChildren.push(
                 new Paragraph({
-                    space: { before: 40, after: 40 },
+                    space: { before: 60, after: 60 },
                     children: [
-                        new TextRun({ text: `DOKUMENTASI BEFORE & AFTER (Total: ${comparisons.length} Point)`, bold: true, size: 17, color: COLOR_PRIMARY })
+                        new TextRun({ text: `DOKUMENTASI BEFORE & AFTER (Total: ${comparisons.length} Point)`, bold: true, size: 24, color: COLOR_PRIMARY })
                     ]
                 })
             );
@@ -224,63 +221,63 @@ async function exportReportToDocx(report) {
             compRows.push(
                 new TableRow({
                     children: [
-                        // BEFORE CELL
+                        // BEFORE CELL (11pt / 22 half-points)
                         new TableCell({
                             width: { size: 50, type: WidthType.PERCENTAGE },
                             borders: cellBorder,
                             children: [
                                 new Paragraph({
-                                    space: { before: 20, after: 20 },
+                                    space: { before: 30, after: 30 },
                                     children: [
-                                        new TextRun({ text: `[${numStr}] BEFORE: ${comp.area}`, bold: true, size: 14, color: "B45309" })
+                                        new TextRun({ text: `[${numStr}] BEFORE: ${comp.area}`, bold: true, size: 22, color: "B45309" })
                                     ]
                                 }),
                                 bImgBuf ? new Paragraph({
                                     alignment: AlignmentType.CENTER,
-                                    space: { before: 20, after: 20 },
+                                    space: { before: 30, after: 30 },
                                     children: [
                                         new ImageRun({
                                             data: bImgBuf,
                                             transformation: { width: 145, height: 95 }
                                         })
                                     ]
-                                }) : new Paragraph({ text: "[Foto Before]", size: 12 }),
+                                }) : new Paragraph({ text: "[Foto Before]", size: 22 }),
                                 new Paragraph({
-                                    space: { before: 20, after: 20 },
+                                    space: { before: 30, after: 30 },
                                     children: [
-                                        new TextRun({ text: "Kondisi Awal: ", bold: true, size: 13 }),
-                                        new TextRun({ text: comp.beforeDesc || "-", size: 13 })
+                                        new TextRun({ text: "Kondisi Awal: ", bold: true, size: 22 }),
+                                        new TextRun({ text: comp.beforeDesc || "-", size: 22 })
                                     ]
                                 })
                             ]
                         }),
 
-                        // AFTER CELL
+                        // AFTER CELL (11pt / 22 half-points)
                         new TableCell({
                             width: { size: 50, type: WidthType.PERCENTAGE },
                             borders: cellBorder,
                             children: [
                                 new Paragraph({
-                                    space: { before: 20, after: 20 },
+                                    space: { before: 30, after: 30 },
                                     children: [
-                                        new TextRun({ text: `[${numStr}] AFTER: ${comp.area}`, bold: true, size: 14, color: "047857" })
+                                        new TextRun({ text: `[${numStr}] AFTER: ${comp.area}`, bold: true, size: 22, color: "047857" })
                                     ]
                                 }),
                                 aImgBuf ? new Paragraph({
                                     alignment: AlignmentType.CENTER,
-                                    space: { before: 20, after: 20 },
+                                    space: { before: 30, after: 30 },
                                     children: [
                                         new ImageRun({
                                             data: aImgBuf,
                                             transformation: { width: 145, height: 95 }
                                         })
                                     ]
-                                }) : new Paragraph({ text: "[Foto After]", size: 12 }),
+                                }) : new Paragraph({ text: "[Foto After]", size: 22 }),
                                 new Paragraph({
-                                    space: { before: 20, after: 20 },
+                                    space: { before: 30, after: 30 },
                                     children: [
-                                        new TextRun({ text: "Hasil & Penyelesaian: ", bold: true, size: 13 }),
-                                        new TextRun({ text: `${comp.methodDesc || ''} ${comp.afterDesc || ''}`, size: 13 })
+                                        new TextRun({ text: "Hasil & Penyelesaian: ", bold: true, size: 22 }),
+                                        new TextRun({ text: `${comp.methodDesc || ''} ${comp.afterDesc || ''}`, size: 22 })
                                     ]
                                 })
                             ]
@@ -295,21 +292,21 @@ async function exportReportToDocx(report) {
                 width: { size: 100, type: WidthType.PERCENTAGE },
                 rows: compRows
             }),
-            new Paragraph({ text: "", space: { after: 40 } })
+            new Paragraph({ text: "", space: { after: 80 } })
         );
     }
 
-    // Append Kesimpulan & Signatures on Last Page
+    // Kesimpulan & Signatures (11pt / 12pt)
     const workNameText = report.workName || "Pemasangan Keramik & Finishing";
     const areaText = report.area || report.location || "Toilet Pria Lt. 2";
 
     docChildren.push(
         new Paragraph({
-            space: { before: 20, after: 40 },
+            space: { before: 40, after: 60 },
             children: [
                 new TextRun({
                     text: `KESIMPULAN: Pekerjaan ${workNameText} pada area ${areaText} (Total: ${comparisons.length} point) telah selesai dilaksanakan 100% sesuai lingkup pekerjaan & spesifikasi teknis. Seluruh dokumentasi Before dan After terlampir di atas.`,
-                    size: 13, bold: true
+                    size: 22, bold: true
                 })
             ]
         })
@@ -318,25 +315,25 @@ async function exportReportToDocx(report) {
     // Signatures
     const sigRowTitle = new TableRow({
         children: [
-            new TableCell({ borders: noBorder, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Dibuat Oleh:", bold: true, size: 14 })] })] }),
-            new TableCell({ borders: noBorder, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Diperiksa Oleh:", bold: true, size: 14 })] })] }),
-            new TableCell({ borders: noBorder, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Disetujui Oleh:", bold: true, size: 14 })] })] })
+            new TableCell({ borders: noBorder, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Dibuat Oleh:", bold: true, size: 22 })] })] }),
+            new TableCell({ borders: noBorder, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Diperiksa Oleh:", bold: true, size: 22 })] })] }),
+            new TableCell({ borders: noBorder, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Disetujui Oleh:", bold: true, size: 22 })] })] })
         ]
     });
 
     const sigRowSpace = new TableRow({
         children: [
-            new TableCell({ borders: noBorder, children: [new Paragraph({ text: "\n\n", size: 12 })] }),
-            new TableCell({ borders: noBorder, children: [new Paragraph({ text: "\n\n", size: 12 })] }),
-            new TableCell({ borders: noBorder, children: [new Paragraph({ text: "\n\n", size: 12 })] })
+            new TableCell({ borders: noBorder, children: [new Paragraph({ text: "\n\n", size: 22 })] }),
+            new TableCell({ borders: noBorder, children: [new Paragraph({ text: "\n\n", size: 22 })] }),
+            new TableCell({ borders: noBorder, children: [new Paragraph({ text: "\n\n", size: 22 })] })
         ]
     });
 
     const sigRowNames = new TableRow({
         children: [
-            new TableCell({ borders: noBorder, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `(${report.supervisor || 'Ir. Budi Santoso'})`, bold: true, size: 13 }), new TextRun({ text: "\nPelaksana", size: 12, color: "64748B" })] })] }),
-            new TableCell({ borders: noBorder, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `(${report.contractor || 'PT. Jaya Konstruksi'})`, bold: true, size: 13 }), new TextRun({ text: "\nSite Manager", size: 12, color: "64748B" })] })] }),
-            new TableCell({ borders: noBorder, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `(${report.client || 'PT. Nusantara Land'})`, bold: true, size: 13 }), new TextRun({ text: "\nKonsultan MK / Owner", size: 12, color: "64748B" })] })] })
+            new TableCell({ borders: noBorder, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `(${report.supervisor || 'Ir. Budi Santoso'})`, bold: true, size: 22 }), new TextRun({ text: "\nPelaksana", size: 20, color: "64748B" })] })] }),
+            new TableCell({ borders: noBorder, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `(${report.contractor || 'PT. Jaya Konstruksi'})`, bold: true, size: 22 }), new TextRun({ text: "\nSite Manager", size: 20, color: "64748B" })] })] }),
+            new TableCell({ borders: noBorder, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `(${report.client || 'PT. Nusantara Land'})`, bold: true, size: 22 }), new TextRun({ text: "\nKonsultan MK / Owner", size: 20, color: "64748B" })] })] })
         ]
     });
 
@@ -347,7 +344,7 @@ async function exportReportToDocx(report) {
         })
     );
 
-    // Create Document (Single .docx file with automatic page breaks)
+    // Create Document (Single .docx file with standard 11pt/12pt print font)
     const doc = new Document({
         sections: [
             {
@@ -373,7 +370,7 @@ async function exportReportToDocx(report) {
     });
 
     const blob = await Packer.toBlob(doc);
-    const fileName = `Laporan_Pekerjaan_Full_${(report.noBap || 'BAP').replace(/\//g, '_')}.docx`;
+    const fileName = `Laporan_Pekerjaan_StandardFont_${(report.noBap || 'BAP').replace(/\//g, '_')}.docx`;
     if (window.saveAs) {
         window.saveAs(blob, fileName);
     } else {
