@@ -665,88 +665,60 @@ class ProjectReportApp {
         const sheet = document.getElementById('a4ReportSheet');
         if (!sheet) return;
 
-        let beforeHtml = '';
-        if (report.beforePhotos && report.beforePhotos.length > 0) {
-            report.beforePhotos.forEach((p, idx) => {
-                const numStr = String(idx + 1).padStart(2, '0');
-                beforeHtml += `
-                    <div class="a4-photo-box">
-                        <img src="${p.url}" alt="Before ${numStr}">
-                        <div class="a4-photo-meta">
-                            <strong class="text-blue">Before ${numStr}</strong><br>
-                            <strong>Lokasi / Area:</strong> ${p.area || report.area}<br>
-                            <strong>Kondisi Sebelum:</strong> ${p.condition}
-                        </div>
-                    </div>
-                `;
-            });
-        } else {
-            beforeHtml = `<p class="text-muted">Tidak ada foto Before.</p>`;
-        }
+        const comparisons = report.comparisons && report.comparisons.length >= 4 
+            ? report.comparisons.slice(0, 4)
+            : [
+                report.comparisons?.[0] || { area: "Point 01: Area Utama", beforeUrl: "assets/img/concrete.jpg", beforeDesc: "Screed beton belum terpasang keramik.", afterUrl: "assets/img/brickwork.jpg", methodDesc: "Pemasangan keramik 40x40cm.", afterDesc: "Keramik terpasang rapi 100%." },
+                report.comparisons?.[1] || { area: "Point 02: Area Drainase", beforeUrl: "assets/img/rebar.jpg", beforeDesc: "Pipa buangan belum ada floor drain.", afterUrl: "assets/img/earthwork.jpg", methodDesc: "Pemasangan saringan stainless.", afterDesc: "Floor drain terpasang rata & lancar." },
+                report.comparisons?.[2] || { area: "Point 03: Area Dinding", beforeUrl: "assets/img/brickwork.jpg", beforeDesc: "Pasangan bata belum diplester.", afterUrl: "assets/img/concrete.jpg", methodDesc: "Plesteran & acian halus.", afterDesc: "Dinding rapi & halus." },
+                report.comparisons?.[3] || { area: "Point 04: Saniter & Pipe", beforeUrl: "assets/img/earthwork.jpg", beforeDesc: "Pipa air bersih & kotor terbuka.", afterUrl: "assets/img/rebar.jpg", methodDesc: "Instalasi fixture saniter.", afterDesc: "Saniter berfungsi tanpa bocor." }
+            ];
 
-        let afterHtml = '';
-        if (report.afterPhotos && report.afterPhotos.length > 0) {
-            report.afterPhotos.forEach((p, idx) => {
-                const numStr = String(idx + 1).padStart(2, '0');
-                afterHtml += `
-                    <div class="a4-photo-box">
-                        <img src="${p.url}" alt="After ${numStr}">
-                        <div class="a4-photo-meta">
-                            <strong class="text-emerald">After ${numStr}</strong><br>
-                            <strong>Lokasi / Area:</strong> ${p.area || report.area}<br>
-                            <strong>Cara Penyelesaian:</strong> ${p.method}<br>
-                            <strong>Hasil Pekerjaan:</strong> ${p.result}
-                        </div>
-                    </div>
-                `;
-            });
-        } else {
-            afterHtml = `<p class="text-muted">Tidak ada foto After.</p>`;
-        }
-
-        let compHtml = '';
-        if (report.comparisons && report.comparisons.length > 0) {
-            report.comparisons.forEach((c, idx) => {
-                const numStr = String(idx + 1).padStart(2, '0');
-                compHtml += `
-                    <p style="font-weight:700; margin-top:8px;">Comparison ${numStr}: ${c.area}</p>
-                    <div class="a4-grid-2">
-                        <div class="a4-photo-box">
-                            <img src="${c.beforeUrl || 'assets/img/concrete.jpg'}">
-                            <div class="a4-photo-meta">
-                                <strong>BEFORE:</strong> ${c.beforeDesc}
+        let pointsHtml = '';
+        comparisons.forEach((c, idx) => {
+            const numStr = String(idx + 1).padStart(2, '0');
+            pointsHtml += `
+                <div class="a4-point-row mb-2" style="border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px; background-color: #fafafa;">
+                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                        <!-- BEFORE COL -->
+                        <div style="flex: 1; display: flex; gap: 8px; align-items: center; border-right: 1px solid #cbd5e1; padding-right: 8px;">
+                            <img src="${c.beforeUrl || 'assets/img/concrete.jpg'}" style="width: 100px; height: 75px; object-fit: cover; border-radius: 3px; border: 1px solid #cbd5e1;">
+                            <div style="font-size: 10px; line-height: 1.3;">
+                                <strong class="text-amber">[${numStr}] BEFORE: ${c.area}</strong><br>
+                                <strong>Kondisi Awal:</strong> ${c.beforeDesc}
                             </div>
                         </div>
-                        <div class="a4-photo-box">
-                            <img src="${c.afterUrl || 'assets/img/brickwork.jpg'}">
-                            <div class="a4-photo-meta">
-                                <strong>AFTER:</strong> ${c.afterDesc}<br>
-                                <em>Pekerjaan:</em> ${c.methodDesc}
+
+                        <!-- AFTER COL -->
+                        <div style="flex: 1; display: flex; gap: 8px; align-items: center;">
+                            <img src="${c.afterUrl || 'assets/img/brickwork.jpg'}" style="width: 100px; height: 75px; object-fit: cover; border-radius: 3px; border: 1px solid #cbd5e1;">
+                            <div style="font-size: 10px; line-height: 1.3;">
+                                <strong class="text-emerald">[${numStr}] AFTER: ${c.area}</strong><br>
+                                <strong>Hasil:</strong> ${c.methodDesc || ''} ${c.afterDesc || ''}
                             </div>
                         </div>
                     </div>
-                `;
-            });
-        }
+                </div>
+            `;
+        });
 
         sheet.innerHTML = `
-            <div class="a4-header">
+            <div class="a4-header" style="border-bottom: 1.5px solid #0f172a; padding-bottom: 6px; margin-bottom: 10px;">
                 <div>
-                    <h3 style="font-size:14px; font-weight:800;">${report.contractor.toUpperCase()}</h3>
-                    <p style="font-size:11px; color:#64748b;">General Contractor & Construction Services</p>
+                    <h3 style="font-size:12px; font-weight:800;">${(report.contractor || 'PT. JAYA KONSTRUKSI').toUpperCase()}</h3>
+                    <p style="font-size:10px; color:#64748b;">General Contractor & Construction Services</p>
                 </div>
                 <div style="text-align:right;">
-                    <h4 style="font-size:12px; font-weight:700;">PROYEK: ${report.projectName}</h4>
-                    <p style="font-size:11px; color:#64748b;">No: ${report.noBap}</p>
+                    <h4 style="font-size:11px; font-weight:700;">PROYEK: ${report.projectName}</h4>
+                    <p style="font-size:10px; color:#64748b;">No: ${report.noBap}</p>
                 </div>
             </div>
 
-            <div class="a4-title-block">
-                <h1>LAPORAN PEKERJAAN SELESAI</h1>
-                <h2>WORK COMPLETION REPORT</h2>
+            <div class="a4-title-block" style="margin-bottom: 10px;">
+                <h1 style="font-size: 14px; color: #1e3a8a; font-weight: 800;">LAPORAN PEKERJAAN SELESAI (WORK COMPLETION REPORT)</h1>
             </div>
 
-            <table class="a4-info-table">
+            <table class="a4-info-table" style="margin-bottom: 10px;">
                 <tr>
                     <td class="lbl">Nama Proyek</td>
                     <td>${report.projectName}</td>
@@ -754,44 +726,32 @@ class ProjectReportApp {
                     <td>${report.noBap}</td>
                 </tr>
                 <tr>
-                    <td class="lbl">Lokasi Proyek</td>
+                    <td class="lbl">Lokasi / Area</td>
                     <td>${report.location}</td>
-                    <td class="lbl">Tanggal Laporan</td>
+                    <td class="lbl">Tanggal</td>
                     <td>${report.workDate}</td>
                 </tr>
                 <tr>
                     <td class="lbl">Nama Pekerjaan</td>
                     <td>${report.workName}</td>
-                    <td class="lbl">Jenis Pekerjaan</td>
-                    <td>${report.workType}</td>
-                </tr>
-                <tr>
-                    <td class="lbl">Area Pekerjaan</td>
-                    <td>${report.area}</td>
                     <td class="lbl">Pelaksana</td>
                     <td>${report.supervisor}</td>
                 </tr>
             </table>
 
-            <div class="a4-section-heading">1. DOKUMENTASI BEFORE (KONDISI AWAL)</div>
-            <div class="a4-grid-2">${beforeHtml}</div>
+            <div class="a4-section-heading" style="font-size: 11px; margin-top: 10px; margin-bottom: 8px;">DOKUMENTASI BEFORE & AFTER (4 POINT PEKERJAAN - 1 LEMBAR A4)</div>
+            
+            ${pointsHtml}
 
-            <div class="a4-section-heading">2. DOKUMENTASI AFTER (HASIL PEKERJAAN)</div>
-            <div class="a4-grid-2">${afterHtml}</div>
-
-            <div class="a4-section-heading">3. BEFORE & AFTER COMPARISON</div>
-            ${compHtml}
-
-            <div class="a4-section-heading">4. KESIMPULAN & VERIFIKASI</div>
-            <p style="font-size:11px; line-height:1.6; margin-bottom:20px;">
-                Pekerjaan <strong>${report.workName}</strong> pada area <strong>${report.area}</strong> telah selesai dilaksanakan 100% sesuai dengan lingkup pekerjaan dan spesifikasi teknis yang ditentukan. Dokumentasi before dan after terlampir sebagai bukti serah terima pekerjaan.
+            <p style="font-size:10px; line-height:1.4; margin-top:10px; margin-bottom:12px;">
+                <strong>KESIMPULAN:</strong> Pekerjaan <strong>${report.workName}</strong> pada area <strong>${report.area}</strong> (4 point) telah selesai dilaksanakan 100% sesuai lingkup pekerjaan & spesifikasi teknis yang ditentukan.
             </p>
 
-            <table style="width:100%; text-align:center; font-size:11px; margin-top:30px;">
+            <table style="width:100%; text-align:center; font-size:10px; margin-top:14px;">
                 <tr>
-                    <td>Dibuat Oleh,<br><br><br><br><strong>(${report.supervisor})</strong><br><small>Site Supervisor</small></td>
-                    <td>Diperiksa Oleh,<br><br><br><br><strong>(${report.contractor})</strong><br><small>Project Manager</small></td>
-                    <td>Disetujui Oleh,<br><br><br><br><strong>(${report.client})</strong><br><small>Konsultan MK / Owner</small></td>
+                    <td>Dibuat Oleh,<br><br><br><strong>(${report.supervisor})</strong><br><small>Pelaksana</small></td>
+                    <td>Diperiksa Oleh,<br><br><br><strong>(${report.contractor})</strong><br><small>Site Manager</small></td>
+                    <td>Disetujui Oleh,<br><br><br><strong>(${report.client})</strong><br><small>Konsultan MK / Owner</small></td>
                 </tr>
             </table>
         `;

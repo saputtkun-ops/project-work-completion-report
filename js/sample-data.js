@@ -1,5 +1,5 @@
 /**
- * SAMPLE INITIAL DATA FOR LAPORAN PEKERJAAN PROYEK
+ * SAMPLE INITIAL DATA FOR LAPORAN PEKERJAAN PROYEK (4 POINTS SINGLE A4 PAGE)
  */
 
 const INITIAL_PROJECTS = [
@@ -13,71 +13,67 @@ const INITIAL_REPORTS = [
         projectName: "Pembangunan Gedung A",
         noBap: "WCR/2026/09/001",
         workDate: "2026-09-08",
-        location: "Gedung A - Lantai 2 - Toilet Pria",
+        location: "Gedung A - Lantai 2",
         supervisor: "Ir. Budi Santoso",
         contractor: "PT. Jaya Konstruksi",
         client: "PT. Nusantara Land",
         workNo: "WO-8842",
         
-        workName: "Pemasangan Keramik Lantai",
+        workName: "Pemasangan Keramik & Finishing Toilet",
         workType: "Finishing / Arsitektur",
-        area: "Bathroom Lt. 2",
+        area: "Toilet Pria Lt. 2",
         status: "Selesai",
         
         beforePhotos: [
-            {
-                id: "b1",
-                url: "assets/img/concrete.jpg",
-                area: "Bathroom Lt. 2",
-                condition: "Permukaan lantai masih berupa screed beton dan belum dilakukan pemasangan finishing keramik.",
-                notes: "Area telah dibersihkan dari puing material."
-            },
-            {
-                id: "b2",
-                url: "assets/img/rebar.jpg",
-                area: "Area Floor Drain",
-                condition: "Pipa drainase belum terpasang leveling waterproof.",
-                notes: "Inspeksi jaringan pipa OK."
-            }
+            { id: "b1", url: "assets/img/concrete.jpg", area: "Area 01 - Lantai Utama", condition: "Permukaan lantai masih berupa screed beton kasar.", notes: "Cleaned" },
+            { id: "b2", url: "assets/img/rebar.jpg", area: "Area 02 - Floor Drain", condition: "Pipa buangan air belum dipasang saringan.", notes: "Inspected" },
+            { id: "b3", url: "assets/img/brickwork.jpg", area: "Area 03 - Dinding Bata", condition: "Dinding belum diplester dan di-acian.", notes: "Raw brick" },
+            { id: "b4", url: "assets/img/earthwork.jpg", area: "Area 04 - Pondasi Wastafel", condition: "Area kedudukan saluran pipa belum rapi.", notes: "Prepared" }
         ],
         
         afterPhotos: [
-            {
-                id: "a1",
-                url: "assets/img/brickwork.jpg",
-                area: "Bathroom Lt. 2",
-                method: "Dilakukan pemasangan keramik lantai menggunakan adhesive mortar instan sesuai spesifikasi material dan dilakukan pengecekan level.",
-                result: "Pekerjaan keramik lantai telah selesai 100%, permukaan rata dan elevasi kemiringan menuju floor drain tepat.",
-                notes: "Nat keramik terisi rapi."
-            },
-            {
-                id: "a2",
-                url: "assets/img/earthwork.jpg",
-                area: "Area Floor Drain",
-                method: "Pemasangan saringan floor drain stainless steel terintegrasi dengan keramik.",
-                result: "Air mengalir lancar tanpa genangan.",
-                notes: "Pengecekan air selesai."
-            }
+            { id: "a1", url: "assets/img/brickwork.jpg", area: "Area 01 - Lantai Utama", method: "Pemasangan keramik 40x40cm mortar instan.", result: "Keramik rata, nat rapi, elevasi pas.", notes: "OK" },
+            { id: "a2", url: "assets/img/earthwork.jpg", area: "Area 02 - Floor Drain", method: "Pemasangan saringan stainless steel.", result: "Air mengalir lancar tanpa genangan.", notes: "OK" },
+            { id: "a3", url: "assets/img/concrete.jpg", area: "Area 03 - Dinding Bata", method: "Plesteran mortar instan & cat kalsimo.", result: "Dinding halus & putih bersih.", notes: "OK" },
+            { id: "a4", url: "assets/img/rebar.jpg", area: "Area 04 - Pondasi Wastafel", method: "Instalasi bracket & unit wastafel.", result: "Wastafel kokoh & siap pakai.", notes: "OK" }
         ],
         
         comparisons: [
             {
                 id: "c1",
-                area: "Bathroom Lt. 2",
+                area: "Point 01: Area Lantai Utama",
                 beforeUrl: "assets/img/concrete.jpg",
-                beforeDesc: "Permukaan lantai masih berupa screed kasar dan lantai belum terpasang keramik.",
+                beforeDesc: "Screed beton kasar belum terpasang keramik.",
                 afterUrl: "assets/img/brickwork.jpg",
-                methodDesc: "Dilakukan pemasangan keramik 40x40 cm dengan perekat instan dan nat warna matching.",
-                afterDesc: "Keramik terpasang rapi, simetris, dan kemiringan air mengalir sempurna ke saringan."
+                methodDesc: "Pemasangan keramik 40x40cm presisi.",
+                afterDesc: "Keramik terpasang rapi & mengkilap."
             },
             {
                 id: "c2",
-                area: "Area Floor Drain",
+                area: "Point 02: Area Floor Drain",
                 beforeUrl: "assets/img/rebar.jpg",
-                beforeDesc: "Pipa buangan lantai belum terpasang saringan floor drain.",
+                beforeDesc: "Saluran buangan belum ada saringan stainless.",
                 afterUrl: "assets/img/earthwork.jpg",
-                methodDesc: "Pemasangan saringan stainless steel 2 inci dan di-seal tahan air.",
-                afterDesc: "Floor drain terpasang presisi selevel permukaan keramik."
+                methodDesc: "Pemasangan floor drain 2 inci.",
+                afterDesc: "Floor drain rata presisi & air lancar."
+            },
+            {
+                id: "c3",
+                area: "Point 03: Dinding & Plesteran",
+                beforeUrl: "assets/img/brickwork.jpg",
+                beforeDesc: "Pasangan bata belum diplester.",
+                afterUrl: "assets/img/concrete.jpg",
+                methodDesc: "Plesteran instan & acian halus.",
+                afterDesc: "Dinding rapi, rata, dan terawat."
+            },
+            {
+                id: "c4",
+                area: "Point 04: Meja Wastafel",
+                beforeUrl: "assets/img/earthwork.jpg",
+                beforeDesc: "Pipa air bersih & kotor belum tersambung.",
+                afterUrl: "assets/img/rebar.jpg",
+                methodDesc: "Pemasangan pipa & saniter.",
+                afterDesc: "Saniter berfungsi normal tanpa bocor."
             }
         ]
     }
